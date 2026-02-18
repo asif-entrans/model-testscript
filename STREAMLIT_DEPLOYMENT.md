@@ -13,8 +13,10 @@ This guide will help you deploy the AI LLM Test Automation app to Streamlit Clou
 Make sure your repository has these files:
 - `app.py` - Main application
 - `requirements.txt` - Python dependencies
-- `packages.txt` - System packages (for Playwright browsers)
+- `packages.txt` - System packages (for Playwright browsers) - **NO COMMENTS ALLOWED!**
 - `.streamlit/config.toml` - Streamlit configuration (optional)
+
+**⚠️ IMPORTANT**: The `packages.txt` file must contain ONLY package names, one per line, with NO comments or blank lines with text. Streamlit Cloud will try to install everything in that file as a package!
 
 ## Step 2: Deploy to Streamlit Cloud
 

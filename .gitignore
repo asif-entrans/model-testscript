@@ -29,7 +29,8 @@ playwright_data/
 *.pem
 
 # Streamlit
-.streamlit/
+# .streamlit/  # Keep config.toml in repo
+.streamlit/secrets.toml
 
 # Configuration (may contain sensitive data)
 # Note: llm_config.json is kept in repo for custom LLM configs, but you can ignore it if preferred
