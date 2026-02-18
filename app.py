@@ -9,12 +9,49 @@ import pandas as pd
 import time
 import os
 from pathlib import Path
-from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 import json
 import threading
 import queue
 import sys
 import asyncio
+
+# Try to install Playwright browsers if needed (for Streamlit Cloud)
+try:
+    from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+except ImportError:
+    st.error("Playwright not installed. Please install: pip install playwright")
+    st.stop()
+
+# Check and install browsers if needed (for Streamlit Cloud deployment)
+@st.cache_resource
+def ensure_playwright_browsers():
+    """Ensure Playwright browsers are installed (for Streamlit Cloud)"""
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            try:
+                browser_path = p.chromium.executable_path
+                if os.path.exists(browser_path):
+                    return True
+            except:
+                pass
+            
+            # Browsers not installed, try to install
+            if os.environ.get("STREAMLIT_SERVER_PORT") or os.environ.get("STREAMLIT_SHARING_MODE"):
+                import subprocess
+                result = subprocess.run(
+                    [sys.executable, "-m", "playwright", "install", "chromium"],
+                    capture_output=True,
+                    text=True,
+                    timeout=300  # 5 minute timeout
+                )
+                return result.returncode == 0
+    except Exception as e:
+        return False
+    return True
+
+# Check browsers on startup (only show warning, don't block)
+_browsers_installed = ensure_playwright_browsers()
 
 # Set Windows event loop policy at module level to avoid NotImplementedError with subprocess
 # Note: Python 3.12+ uses ProactorEventLoopPolicy by default on Windows, but we set it explicitly
@@ -628,6 +665,25 @@ st.set_page_config(
 st.title("🤖 AI LLM Test Automation")
 st.markdown("Automate testing of ChatGPT, Claude, Gemini, and any custom LLM service through browser automation")
 
+# Show browser installation status for Streamlit Cloud
+if os.environ.get("STREAMLIT_SERVER_PORT") or os.environ.get("STREAMLIT_SHARING_MODE"):
+    if not _browsers_installed:
+        with st.expander("⚠️ Playwright Browsers Installation Required", expanded=True):
+            st.warning("**Playwright browsers are not installed on Streamlit Cloud.**")
+            st.info("""
+            **To fix this:**
+            
+            1. Click the **"🔧 Test Playwright Installation"** button in the sidebar - it will try to install automatically
+            
+            2. **OR** use Streamlit Cloud's console:
+               - Go to your app settings
+               - Open the console/terminal
+               - Run: `playwright install chromium`
+            
+            3. **OR** add this to your deployment (see `STREAMLIT_DEPLOYMENT.md`):
+               - The app will try to auto-install on first run
+            """)
+
 # Sidebar for configuration
 with st.sidebar:
     st.header("⚙️ Configuration")
@@ -718,6 +774,31 @@ with st.sidebar:
     # Test Playwright button
     if st.button("🔧 Test Playwright Installation", help="Click to verify Playwright is working correctly"):
         test_status = st.empty()
+        
+        # Try to install browsers if on Streamlit Cloud and not installed
+        if (os.environ.get("STREAMLIT_SERVER_PORT") or os.environ.get("STREAMLIT_SHARING_MODE")) and not _browsers_installed:
+            test_status.info("🔧 Detected Streamlit Cloud - installing Playwright browsers...")
+            import subprocess
+            try:
+                install_result = subprocess.run(
+                    [sys.executable, "-m", "playwright", "install", "chromium"],
+                    capture_output=True,
+                    text=True,
+                    timeout=300
+                )
+                if install_result.returncode == 0:
+                    test_status.success("✅ Browsers installed! Now testing...")
+                    # Clear cache to recheck
+                    ensure_playwright_browsers.clear()
+                else:
+                    test_status.error(f"❌ Installation failed: {install_result.stderr[:300]}")
+                    test_status.info("💡 Try running `playwright install chromium` in Streamlit Cloud console")
+            except subprocess.TimeoutExpired:
+                test_status.error("⏱️ Installation timed out. Please try again or use Streamlit Cloud console.")
+            except Exception as e:
+                test_status.warning(f"⚠️ Could not auto-install: {str(e)}")
+                test_status.info("💡 Please run `playwright install chromium` manually in Streamlit Cloud console")
+        
         test_status.info("Testing Playwright in background thread...")
         
         def test_playwright_thread(result_queue):

@@ -1,0 +1,10 @@
+# System packages needed for Playwright on Linux (Streamlit Cloud)
+# This file is used by Streamlit Cloud to install system dependencies
+
+libnss3
+libatk-bridge2.0-0
+libdrm2
+libxkbcommon0
+libgbm1
+libasound2
+

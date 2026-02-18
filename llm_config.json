@@ -1,0 +1,38 @@
+{
+  "ChatGPT": {
+    "url": "https://chatgpt.com",
+    "input_selector": "#prompt-textarea",
+    "output_selector": "[data-message-author-role='assistant']",
+    "submit_method": "enter",
+    "submit_button_selector": null,
+    "wait_selector": "[data-testid='stop-button']",
+    "response_wait_time": 15
+  },
+  "Claude": {
+    "url": "https://claude.ai",
+    "input_selector": "[contenteditable='true']",
+    "output_selector": ".font-claude-message",
+    "submit_method": "enter",
+    "submit_button_selector": null,
+    "wait_selector": ".stop-button",
+    "response_wait_time": 15
+  },
+  "Gemini": {
+    "url": "https://gemini.google.com",
+    "input_selector": ".ql-editor",
+    "output_selector": ".message-content",
+    "submit_method": "button",
+    "submit_button_selector": "button[aria-label*='Send']",
+    "wait_selector": null,
+    "response_wait_time": 15
+  },
+  "Perplexity": {
+    "url": "https://www.perplexity.ai/",
+    "input_selector": "#ask-input",
+    "output_selector": "#thread article div.flex.max-w-full.flex-col.grow div div div",
+    "submit_method": "enter",
+    "submit_button_selector": null,
+    "wait_selector": null,
+    "response_wait_time": 15
+  }
+}

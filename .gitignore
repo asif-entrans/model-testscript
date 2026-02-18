@@ -32,7 +32,8 @@ playwright_data/
 .streamlit/
 
 # Configuration (may contain sensitive data)
-llm_config.json
+# Note: llm_config.json is kept in repo for custom LLM configs, but you can ignore it if preferred
+# llm_config.json
 
 # Excel files (user data)
 *.xlsx
